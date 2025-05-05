@@ -117,6 +117,32 @@ int main(void)
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
+  FATFS fs;
+  FIL file;
+  UINT f_num;
+  FRESULT f_res;
+  BYTE write_buf[] = "This is a test";
+  f_res = f_mount(&fs, "0:", 1);
+  if (f_res == FR_NO_FILESYSTEM)
+  {
+    f_res = f_mkfs("0:", 0, 0);
+    if (f_res == FR_OK)
+    {
+      f_res = f_mount(NULL, "0:", 1);
+      f_res = f_mount(&fs, "0:", 1);
+    }
+    else
+    {
+      while (1);
+    }
+  }
+
+  f_res = f_open(&file, "0:test.txt", FA_CREATE_ALWAYS | FA_WRITE);
+  if (f_res == FR_OK)
+  {
+    f_write(&file, write_buf, sizeof(write_buf), &f_num);
+    f_close(&file);
+  }
   while (1)
   {
     /* USER CODE END WHILE */
@@ -342,9 +368,9 @@ static void MX_SDIO_SD_Init(void)
   hsd.Init.ClockEdge = SDIO_CLOCK_EDGE_RISING;
   hsd.Init.ClockBypass = SDIO_CLOCK_BYPASS_DISABLE;
   hsd.Init.ClockPowerSave = SDIO_CLOCK_POWER_SAVE_DISABLE;
-  hsd.Init.BusWide = SDIO_BUS_WIDE_4B;
+  hsd.Init.BusWide = SDIO_BUS_WIDE_1B;
   hsd.Init.HardwareFlowControl = SDIO_HARDWARE_FLOW_CONTROL_DISABLE;
-  hsd.Init.ClockDiv = 0;
+  hsd.Init.ClockDiv = 2;
   /* USER CODE BEGIN SDIO_Init 2 */
 
   /* USER CODE END SDIO_Init 2 */
@@ -362,7 +388,7 @@ static void MX_DMA_Init(void)
 
   /* DMA interrupt init */
   /* DMA2_Channel4_5_IRQn interrupt configuration */
-  HAL_NVIC_SetPriority(DMA2_Channel4_5_IRQn, 0, 0);
+  HAL_NVIC_SetPriority(DMA2_Channel4_5_IRQn, 2, 0);
   HAL_NVIC_EnableIRQ(DMA2_Channel4_5_IRQn);
 
 }
@@ -423,7 +449,7 @@ static void MX_GPIO_Init(void)
   /*Configure GPIO pin : FATFS_SIG_Pin */
   GPIO_InitStruct.Pin = FATFS_SIG_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Pull = GPIO_PULLDOWN;
   HAL_GPIO_Init(FATFS_SIG_GPIO_Port, &GPIO_InitStruct);
 
   /*Configure GPIO pins : OV_RRST_Pin OV_OE_Pin OV_SCL_Pin OV_SDA_Pin */
