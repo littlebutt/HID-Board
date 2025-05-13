@@ -25,6 +25,7 @@
 /* USER CODE BEGIN Includes */
 #include "sd_card.h"
 #include "joystick.h"
+#include "usbd_hid_keyboard.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -55,7 +56,7 @@ SD_HandleTypeDef hsd;
 DMA_HandleTypeDef hdma_sdio;
 
 /* USER CODE BEGIN PV */
-
+extern USBD_HandleTypeDef hUsbDeviceFS;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -114,7 +115,8 @@ int main(void)
   MX_FATFS_Init();
   MX_USB_DEVICE_Init();
   /* USER CODE BEGIN 2 */
-
+  uint8_t HID_Buffer[8] = {0};
+  uint8_t HID_Buffer_empty[8] = {0};
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -128,8 +130,15 @@ int main(void)
   res = sd_card_read("test2.txt", buf, buflen);
   printf("%d", res);
 
+  int key_state = 1;
+  int key_state_prev = 1;
+  HID_Buffer[2] = 0x04;
   while (1)
   {
+    HAL_Delay(10);
+    USBD_HID_SendReport2(&hUsbDeviceFS, HID_Buffer, sizeof(HID_Buffer));
+    HAL_Delay(10);
+    USBD_HID_SendReport2(&hUsbDeviceFS, HID_Buffer_empty, sizeof(HID_Buffer_empty));
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
