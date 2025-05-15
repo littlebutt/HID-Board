@@ -26,6 +26,7 @@
 #include "sd_card.h"
 #include "joystick.h"
 #include "usbd_hid_keyboard.h"
+#include "keyboard.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -57,6 +58,7 @@ DMA_HandleTypeDef hdma_sdio;
 
 /* USER CODE BEGIN PV */
 extern USBD_HandleTypeDef hUsbDeviceFS;
+keyboard_ctx ctx;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -115,30 +117,23 @@ int main(void)
   MX_FATFS_Init();
   MX_USB_DEVICE_Init();
   /* USER CODE BEGIN 2 */
-  uint8_t HID_Buffer[8] = {0};
-  uint8_t HID_Buffer_empty[8] = {0};
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-  sd_card_init();
-  BYTE w_buf[] = "This is another test";
-  int res = sd_card_write("test2.txt", w_buf, sizeof(w_buf));
-  printf("%d", res);
-  size_t buflen = 1024;
-  BYTE *buf = (BYTE *)malloc(sizeof(BYTE) * buflen);
-  res = sd_card_read("test2.txt", buf, buflen);
-  printf("%d", res);
+  // sd_card_init();
+  // BYTE w_buf[] = "This is another test";
+  // int res = sd_card_write("test2.txt", w_buf, sizeof(w_buf));
+  // printf("%d", res);
+  // size_t buflen = 1024;
+  // BYTE *buf = (BYTE *)malloc(sizeof(BYTE) * buflen);
+  // res = sd_card_read("test2.txt", buf, buflen);
+  // printf("%d", res);
 
-  int key_state = 1;
-  int key_state_prev = 1;
-  HID_Buffer[2] = 0x04;
+  ctx = keyboard_new();
   while (1)
   {
-    HAL_Delay(10);
-    USBD_HID_SendReport2(&hUsbDeviceFS, HID_Buffer, sizeof(HID_Buffer));
-    HAL_Delay(10);
-    USBD_HID_SendReport2(&hUsbDeviceFS, HID_Buffer_empty, sizeof(HID_Buffer_empty));
+    keyboard_scan(&ctx);
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
@@ -473,25 +468,31 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(OV_VSYNC_GPIO_Port, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : DS_IN_Pin KB_COL2_Pin KB_COL1_Pin */
-  GPIO_InitStruct.Pin = DS_IN_Pin|KB_COL2_Pin|KB_COL1_Pin;
+  /*Configure GPIO pin : DS_IN_Pin */
+  GPIO_InitStruct.Pin = DS_IN_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
-  HAL_GPIO_Init(GPIOG, &GPIO_InitStruct);
+  HAL_GPIO_Init(DS_IN_GPIO_Port, &GPIO_InitStruct);
 
   /*Configure GPIO pins : KB_COL4_Pin KB_COL3_Pin */
   GPIO_InitStruct.Pin = KB_COL4_Pin|KB_COL3_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Pull = GPIO_PULLDOWN;
   HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
 
+  /*Configure GPIO pins : KB_COL2_Pin KB_COL1_Pin */
+  GPIO_InitStruct.Pin = KB_COL2_Pin|KB_COL1_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+  GPIO_InitStruct.Pull = GPIO_PULLDOWN;
+  HAL_GPIO_Init(GPIOG, &GPIO_InitStruct);
+
   /*Configure GPIO pins : KB_ROW5_Pin KB_ROW4_Pin KB_ROW3_Pin KB_ROW2_Pin
-                           KB_ROW1_Pin LED_Pin */
+                           KB_ROW1_Pin */
   GPIO_InitStruct.Pin = KB_ROW5_Pin|KB_ROW4_Pin|KB_ROW3_Pin|KB_ROW2_Pin
-                          |KB_ROW1_Pin|LED_Pin;
+                          |KB_ROW1_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
   HAL_GPIO_Init(GPIOG, &GPIO_InitStruct);
 
   /*Configure GPIO pin : MCO_Pin */
@@ -499,6 +500,13 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(MCO_GPIO_Port, &GPIO_InitStruct);
+
+  /*Configure GPIO pin : LED_Pin */
+  GPIO_InitStruct.Pin = LED_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(LED_GPIO_Port, &GPIO_InitStruct);
 
   /*Configure GPIO pins : OV_WEN_Pin OV_RCLK_Pin */
   GPIO_InitStruct.Pin = OV_WEN_Pin|OV_RCLK_Pin;
