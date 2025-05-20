@@ -8,6 +8,7 @@ typedef struct
 {
     uint16_t target_row_pin;
     GPIO_TypeDef *target_row_gpio_port;
+    int key_pressed[];
 } keyboard_ctx;
 
 keyboard_ctx keyboard_new();
