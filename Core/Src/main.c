@@ -23,8 +23,6 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include "sd_card.h"
-#include "joystick.h"
 #include "usbd_hid_keyboard.h"
 #include "keyboard.h"
 /* USER CODE END Includes */
@@ -121,14 +119,6 @@ int main(void)
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-  // sd_card_init();
-  // BYTE w_buf[] = "This is another test";
-  // int res = sd_card_write("test2.txt", w_buf, sizeof(w_buf));
-  // printf("%d", res);
-  // size_t buflen = 1024;
-  // BYTE *buf = (BYTE *)malloc(sizeof(BYTE) * buflen);
-  // res = sd_card_read("test2.txt", buf, buflen);
-  // printf("%d", res);
 
   ctx = keyboard_new();
   while (1)
