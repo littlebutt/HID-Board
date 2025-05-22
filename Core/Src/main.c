@@ -27,6 +27,7 @@
 #include "joystick.h"
 #include "usbd_hid_keyboard.h"
 #include "keyboard.h"
+#include "led.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -131,9 +132,18 @@ int main(void)
   // printf("%d", res);
 
   ctx = keyboard_new();
+  led_ctx lctx = {0};
+  for (int i = 0; i < 17; i++)
+  {
+    lctx.c[i].r = 0;
+    lctx.c[i].g = 0;
+    lctx.c[i].b = 10;
+  }
+  led_send_data(lctx);
   while (1)
   {
-    keyboard_scan(&ctx);
+    led_send_data(lctx);
+    // keyboard_scan(&ctx);
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */

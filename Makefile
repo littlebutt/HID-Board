@@ -39,6 +39,7 @@ C_SOURCES =  \
 Core/Src/main.c \
 Core/Src/sd_card.c \
 Core/Src/joystick.c \
+Core/Src/led.c \
 Core/Src/usbd_hid_keyboard.c \
 Core/Src/keyboard.c \
 Core/Src/stm32f1xx_it.c \
