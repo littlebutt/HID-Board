@@ -22,7 +22,7 @@ TARGET = HID-Board
 # debug build?
 DEBUG = 1
 # optimization
-OPT = -Og
+OPT = -O0
 
 
 #######################################
@@ -38,6 +38,9 @@ BUILD_DIR = build
 C_SOURCES =  \
 Core/Src/main.c \
 Core/Src/sd_card.c \
+Core/Src/camera_sccb.c \
+Core/Src/delay.c \
+Core/Src/camera.c \
 Core/Src/joystick.c \
 Core/Src/led.c \
 Core/Src/usbd_hid_keyboard.c \

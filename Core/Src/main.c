@@ -27,7 +27,9 @@
 #include "joystick.h"
 #include "usbd_hid_keyboard.h"
 #include "keyboard.h"
-#include "led.h"
+#include "camera.h"
+
+#include <stdlib.h>
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -122,7 +124,7 @@ int main(void)
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-  // sd_card_init();
+  sd_card_init();
   // BYTE w_buf[] = "This is another test";
   // int res = sd_card_write("test2.txt", w_buf, sizeof(w_buf));
   // printf("%d", res);
@@ -131,18 +133,31 @@ int main(void)
   // res = sd_card_read("test2.txt", buf, buflen);
   // printf("%d", res);
 
-  ctx = keyboard_new();
-  led_ctx lctx = {0};
-  for (int i = 0; i < 17; i++)
+  // ctx = keyboard_new();
+  uint8_t ret;
+    
+  ret = camera_init();
+  if (ret != 0)
   {
-    lctx.c[i].r = 0;
-    lctx.c[i].g = 0;
-    lctx.c[i].b = 10;
+      Error_Handler();
   }
-  led_send_data(lctx);
+    
+  ret  = camera_set_output(CAMERA_QVGA_WIDTH_MAX, CAMERA_QVGA_HEIGHT_MAX, CAMERA_OUTPUT_MODE_QVGA);
+  ret += camera_set_light_mode(CAMERA_LIGHT_MODE_AUTO);
+  ret += camera_set_color_saturation(CAMERA_COLOR_SATURATION_4);
+  ret += camera_set_brightness(CAMERA_BRIGHTNESS_4);
+  ret += camera_set_contrast(CAMERA_CONTRAST_4);
+  ret += camera_set_special_effect(CAMERA_SPECIAL_EFFECT_NORMAL);
+  if (ret != 0)
+  {
+      Error_Handler();
+  }
+  camera_enable_output();
+  uint16_t *buf = (uint16_t *)malloc(camera_get_output_height() * camera_get_output_width() * 2);
+  ret = camera_get_frame(buf, CAMERA_GET_FRAME_TYPE_NOINC);
+  int res = sd_card_write("frame.raw", (BYTE *)(buf), sizeof(buf));
   while (1)
   {
-    led_send_data(lctx);
     // keyboard_scan(&ctx);
     /* USER CODE END WHILE */
 
