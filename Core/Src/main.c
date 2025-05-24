@@ -28,7 +28,7 @@
 #include "usbd_hid_keyboard.h"
 #include "keyboard.h"
 #include "camera.h"
-
+#include "delay.h"
 #include <stdlib.h>
 /* USER CODE END Includes */
 
@@ -119,6 +119,7 @@ int main(void)
   MX_I2S2_Init();
   MX_FATFS_Init();
   MX_USB_DEVICE_Init();
+  delay_init();
   /* USER CODE BEGIN 2 */
   /* USER CODE END 2 */
 
@@ -153,9 +154,10 @@ int main(void)
       Error_Handler();
   }
   camera_enable_output();
-  uint16_t *buf = (uint16_t *)malloc(camera_get_output_height() * camera_get_output_width() * 2);
-  ret = camera_get_frame(buf, CAMERA_GET_FRAME_TYPE_NOINC);
-  int res = sd_card_write("frame.raw", (BYTE *)(buf), sizeof(buf));
+  size_t buflen = camera_get_output_height() * camera_get_output_width() * 2;
+  uint16_t *buf = (uint16_t *)malloc(buflen);
+  ret = camera_get_frame(buf, CAMERA_GET_FRAME_TYPE_AUTO_INC);
+  int res = sd_card_write("frame.raw", (BYTE *)(buf), buflen);
   while (1)
   {
     // keyboard_scan(&ctx);
@@ -395,7 +397,7 @@ static void MX_SDIO_SD_Init(void)
   hsd.Init.HardwareFlowControl = SDIO_HARDWARE_FLOW_CONTROL_DISABLE;
   hsd.Init.ClockDiv = 2;
   /* USER CODE BEGIN SDIO_Init 2 */
-
+  hsd.Init.ClockDiv = 5;
   /* USER CODE END SDIO_Init 2 */
 
 }

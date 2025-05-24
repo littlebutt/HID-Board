@@ -24,28 +24,30 @@ void sd_card_init()
 int sd_card_write(const char *filename, BYTE *buf, size_t buflen)
 {
   FIL fp;
+  FRESULT res;
   UINT f_num = 0;
   char target[64];
   memset(target, 0, sizeof(target));
   snprintf(target, sizeof(target), "0:%s", filename);
-  FRESULT f_res = f_open(&fp, target, FA_CREATE_ALWAYS | FA_WRITE);
-  if (f_res == FR_OK)
+  UINT offset = 0;
+  UINT bw;
+  UINT block_size = 4096;  // 4KB
+  res = f_open(&fp, filename, FA_CREATE_ALWAYS | FA_WRITE);
+  if (res != FR_OK) return res;
+
+  while (offset < buflen)
   {
-    f_res = f_write(&fp, buf, buflen, &f_num);
-    if (f_res != FR_OK)
+    UINT write_size = (buflen - offset) > block_size ? block_size : (buflen - offset);
+    res = f_write(&fp, buf + offset, write_size, &bw);
+    if (res != FR_OK || bw < write_size)
     {
-      return -1;
+      f_close(&fp);
+      return res != FR_OK ? res : FR_DISK_ERR;
     }
-    f_res = f_close(&fp);
-    if (f_res != FR_OK)
-    {
-      return -1;
-    }
+    offset += bw;
   }
-  else
-  {
-    return -1;
-  }
+
+  f_close(&fp);
   return (int)f_num;
 }
 
